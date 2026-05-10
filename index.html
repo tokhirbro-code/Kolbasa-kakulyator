@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+  <meta name="theme-color" content="#0f0e0d"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black"/>
+  <meta name="apple-mobile-web-app-title" content="Kolbasa Kalkulyatori"/>
+  <title>Kolbasa Kalkulyatori</title>
+  <link rel="manifest" href="manifest.json"/>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #0f0e0d;
+      color: #f0ede8;
+      font-family: 'Courier New', monospace;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 16px 48px;
+    }
+    .header { text-align: center; margin-bottom: 22px; }
+    .header-sub { font-size: 10px; letter-spacing: 6px; text-transform: uppercase; opacity: 0.8; margin-bottom: 5px; }
+    .header h1 { font-size: 24px; font-weight: 900; letter-spacing: -1px; }
+    .header-copy { font-size: 10px; color: #444; margin-top: 4px; }
+    .card { background: #1a1917; border-radius: 16px; padding: 18px; width: 100%; max-width: 390px; margin-bottom: 14px; border: 1px solid #2a2826; }
+    .lbl { font-size: 10px; letter-spacing: 3px; color: #555; margin-bottom: 8px; display: block; }
+    .row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+    .row-flex { display: flex; align-items: center; gap: 8px; }
+    button { cursor: pointer; font-family: 'Courier New', monospace; transition: all 0.2s; }
+    .mode-btn { flex: 1; padding: 10px 0; border-radius: 8px; font-weight: 700; font-size: 13px; border: 2px solid #2a2826; background: #0f0e0d; color: #555; }
+    .chip { padding: 8px 14px; border-radius: 8px; font-weight: 700; font-size: 12px; border: 2px solid #2a2826; background: #0f0e0d; color: #555; }
+    .type-chip { padding: 6px 12px; border-radius: 20px; font-weight: 600; font-size: 12px; border: 2px solid #2a2826; background: transparent; color: #555; }
+    .num-input { flex: 1; padding: 10px 14px; border-radius: 10px; border: 1px solid #2a2826; background: #0f0e0d; color: #f0ede8; font-size: 18px; font-family: 'Courier New', monospace; font-weight: 700; outline: none; min-width: 0; }
+    .unit { color: #555; font-size: 13px; white-space: nowrap; }
+    .diameter-row { display: flex; align-items: center; gap: 16px; }
+    .slider-wrap { flex: 1; }
+    input[type=range] { width: 100%; }
+    .slider-labels { display: flex; justify-content: space-between; font-size: 11px; color: #555; }
+    .diameter-val { font-weight: 700; font-size: 17px; }
+    .density-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .custom-btn { font-size: 10px; background: none; border: none; cursor: pointer; font-family: 'Courier New', monospace; letter-spacing: 1px; color: #555; }
+    .density-display { padding: 10px 14px; border-radius: 10px; background: #0f0e0d; border: 1px solid #2a2826; color: #555; font-size: 16px; font-weight: 700; }
+    .result-card { border-radius: 20px; padding: 24px 20px; width: 100%; max-width: 390px; text-align: center; }
+    .result-lbl { font-size: 10px; letter-spacing: 4px; margin-bottom: 6px; }
+    .result-num { font-size: 68px; font-weight: 900; line-height: 1; letter-spacing: -2px; }
+    .result-unit { font-size: 20px; font-weight: 700; margin-bottom: 18px; }
+    .result-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+    .result-cell { border-radius: 10px; padding: 10px 6px; background: rgba(15,14,13,0.53); }
+    .result-cell-lbl { font-size: 9px; color: #555; letter-spacing: 2px; margin-bottom: 4px; }
+    .result-cell-val { font-size: 13px; font-weight: 700; color: #f0ede8; }
+    .price-info { margin-top: 14px; padding: 10px 14px; border-radius: 10px; background: rgba(15,14,13,0.33); font-size: 13px; color: #aaa; }
+    .formula { margin-top: 12px; padding: 8px; border-radius: 10px; background: rgba(15,14,13,0.33); font-size: 11px; color: #666; }
+    .footer { margin-top: 24px; font-size: 10px; color: #333; text-align: center; letter-spacing: 2px; }
+    #price-section { display: none; }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-sub" id="header-sub">Precision Slicer</div>
+  <h1>Kolbasa Kalkulyatori</h1>
+  <div class="header-copy">© 2024 · Barcha huquqlar himoyalangan</div>
+</div>
+
+<div class="card">
+  <span class="lbl">HISOBLASH REJIMI</span>
+  <div style="display:flex;gap:10px;">
+    <button class="mode-btn" id="btn-gram" onclick="setMode('gram')">⚖️ Gramda</button>
+    <button class="mode-btn" id="btn-price" onclick="setMode('price')">💰 Narxda</button>
+  </div>
+</div>
+
+<div class="card">
+  <span class="lbl">KOLBASA TURI</span>
+  <div class="row" id="type-chips"></div>
+</div>
+
+<div class="card">
+  <div class="diameter-row">
+    <svg id="sausage-icon" width="80" height="80" viewBox="0 0 80 80">
+      <defs>
+        <radialGradient id="sg" cx="40%" cy="35%" r="60%">
+          <stop offset="0%" stop-color="#fff" stop-opacity="0.25"/>
+          <stop offset="100%" stop-color="#c94040" stop-opacity="0"/>
+        </radialGradient>
+      </defs>
+      <circle id="ic1" cx="40" cy="40" r="32" fill="#c94040" opacity="0.15"/>
+      <circle id="ic2" cx="40" cy="40" r="23" fill="#c94040" opacity="0.7"/>
+      <circle cx="40" cy="40" r="23" fill="url(#sg)"/>
+      <text id="ic-txt" x="40" y="45" text-anchor="middle" font-size="11" font-weight="700" fill="#fff" font-family="monospace">⌀80</text>
+    </svg>
+    <div class="slider-wrap">
+      <span class="lbl">DIAMETR (mm)</span>
+      <input type="range" id="diameter-slider" min="30" max="150" value="80" oninput="onDiameter(this.value)"/>
+      <div class="slider-labels">
+        <span>30</span>
+        <span class="diameter-val" id="diameter-val">80 mm</span>
+        <span>150</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card" id="gram-section">
+  <span class="lbl">KERAKLI MIQDOR (gram)</span>
+  <div class="row" id="gram-chips">
+    <button class="chip" onclick="setGram(100)">100g</button>
+    <button class="chip" onclick="setGram(200)">200g</button>
+    <button class="chip" onclick="setGram(300)">300g</button>
+    <button class="chip" onclick="setGram(500)">500g</button>
+  </div>
+  <div class="row-flex">
+    <input type="number" class="num-input" id="gram-input" value="200" min="10" max="5000" oninput="calculate()"/>
+    <span class="unit">gram</span>
+  </div>
+</div>
+
+<div class="card" id="price-section">
+  <div style="margin-bottom:18px">
+    <span class="lbl">1 KG NARXI (so'm)</span>
+    <div class="row" id="pkg-chips">
+      <button class="chip" onclick="setPkg(30000)">30k</button>
+      <button class="chip" onclick="setPkg(50000)">50k</button>
+      <button class="chip" onclick="setPkg(70000)">70k</button>
+      <button class="chip" onclick="setPkg(100000)">100k</button>
+    </div>
+    <div class="row-flex">
+      <input type="number" class="num-input" id="pkg-input" value="50000" min="1000" oninput="calculate()"/>
+      <span class="unit">so'm/kg</span>
+    </div>
+  </div>
+  <div>
+    <span class="lbl">MIJOZ BERGAN PUL (so'm)</span>
+    <div class="row" id="price-chips">
+      <button class="chip" onclick="setPrice(5000)">5k</button>
+      <button class="chip" onclick="setPrice(10000)">10k</button>
+      <button class="chip" onclick="setPrice(20000)">20k</button>
+      <button class="chip" onclick="setPrice(50000)">50k</button>
+    </div>
+    <div class="row-flex">
+      <input type="number" class="num-input" id="price-input" value="10000" min="100" oninput="calculate()"/>
+      <span class="unit">so'm</span>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="density-header">
+    <span class="lbl" style="margin-bottom:0">ZICHLIK (g/cm³)</span>
+    <button class="custom-btn" id="custom-btn" onclick="toggleCustom()">○ QO'LDA</button>
+  </div>
+  <div class="density-display" id="density-display">1.02 g/cm³</div>
+  <input type="number" class="num-input" id="density-input" value="1.02" step="0.01" min="0.8" max="1.3" oninput="calculate()" style="display:none;width:100%;"/>
+</div>
+
+<div class="result-card" id="result-card">
+  <div class="result-lbl" id="result-lbl">KESISH UZUNLIGI</div>
+  <div class="result-num" id="result-num">–</div>
+  <div class="result-unit" id="result-unit">santimetr</div>
+  <div class="result-grid">
+    <div class="result-cell"><div class="result-cell-lbl">GRAM</div><div class="result-cell-val" id="r-gram">–</div></div>
+    <div class="result-cell"><div class="result-cell-lbl">DIAMETR</div><div class="result-cell-val" id="r-diam">–</div></div>
+    <div class="result-cell"><div class="result-cell-lbl" id="r3-lbl">ZICHLIK</div><div class="result-cell-val" id="r3-val">–</div></div>
+  </div>
+  <div class="price-info" id="price-info" style="display:none"></div>
+  <div class="formula">Formula: L = m ÷ (π × r² × ρ)</div>
+</div>
+
+<div class="footer">© 2024 KOLBASA KALKULYATORI · BARCHA HUQUQLAR HIMOYALANGAN</div>
+<script>
+const TYPES = [
+  { name: "Doktorskaya", density: 1.02, color: "#c94040" },
+  { name: "Servelat",    density: 1.05, color: "#8b3a3a" },
+  { name: "Krakovskaya", density: 1.03, color: "#b05030" },
+  { name: "Molochnaya",  density: 0.98, color: "#d4826a" },
+  { name: "Boshqa",      density: 1.00, color: "#888"    },
+];
+let selectedType=0,mode="gram",customDensity=false,diameter=80;
+function getColor(){return TYPES[selectedType].color;}
+function applyColor(){const c=getColor();document.getElementById('header-sub').style.color=c;document.getElementById('diameter-val').style.color=c;document.getElementById('diameter-slider').style.accentColor=c;document.getElementById('ic1').setAttribute('fill',c);document.getElementById('ic2').setAttribute('fill',c);document.getElementById('custom-btn').style.color=customDensity?c:'#555';document.getElementById('result-lbl').style.color=c;document.getElementById('result-num').style.color=c;document.getElementById('result-unit').style.color=c+'aa';document.getElementById('result-card').style.background=c+'18';document.getElementById('result-card').style.border='2px solid '+c+'55';if(customDensity){document.getElementById('density-input').style.color=c;document.getElementById('density-input').style.border='1px solid '+c+'44';}renderTypeChips();updateChips();}
+function renderTypeChips(){const wrap=document.getElementById('type-chips');wrap.innerHTML='';TYPES.forEach((t,i)=>{const btn=document.createElement('button');btn.className='type-chip';btn.textContent=t.name;btn.style.border=i===selectedType?'2px solid '+t.color:'2px solid #2a2826';btn.style.background=i===selectedType?t.color+'22':'transparent';btn.style.color=i===selectedType?t.color:'#555';btn.onclick=()=>selectType(i);wrap.appendChild(btn);});}
+function selectType(i){selectedType=i;if(!customDensity){const d=TYPES[i].density;document.getElementById('density-input').value=d;document.getElementById('density-display').textContent=d.toFixed(2)+' g/cm³';}applyColor();calculate();}
+function setMode(m){mode=m;document.getElementById('gram-section').style.display=m==='gram'?'block':'none';document.getElementById('price-section').style.display=m==='price'?'block':'none';updateModeBtns();calculate();}
+function updateModeBtns(){const c=getColor();['gram','price'].forEach(m2=>{const btn=document.getElementById('btn-'+m2);const active=mode===m2;btn.style.border=active?'2px solid '+c:'2px solid #2a2826';btn.style.background=active?c+'22':'#0f0e0d';btn.style.color=active?c:'#555';});}
+function onDiameter(v){diameter=Number(v);document.getElementById('diameter-val').textContent=v+' mm';document.getElementById('ic-txt').textContent='⌀'+v;calculate();}
+function setGram(g){document.getElementById('gram-input').value=g;calculate();updateChips();}
+function setPkg(p){document.getElementById('pkg-input').value=p;calculate();updateChips();}
+function setPrice(p){document.getElementById('price-input').value=p;calculate();updateChips();}
+function updateChips(){const c=getColor();const gv=Number(document.getElementById('gram-input').value);document.querySelectorAll('#gram-chips .chip').forEach((btn,i)=>{const vals=[100,200,300,500];const active=gv===vals[i];btn.style.border=active?'2px solid '+c:'2px solid #2a2826';btn.style.background=active?c+'22':'#0f0e0d';btn.style.color=active?c:'#555';});const pkgv=Number(document.getElementById('pkg-input').value);document.querySelectorAll('#pkg-chips .chip').forEach((btn,i)=>{const vals=[30000,50000,70000,100000];const active=pkgv===vals[i];btn.style.border=active?'2px solid '+c:'2px solid #2a2826';btn.style.background=active?c+'22':'#0f0e0d';btn.style.color=active?c:'#555';});const pv=Number(document.getElementById('price-input').value);document.querySelectorAll('#price-chips .chip').forEach((btn,i)=>{const vals=[5000,10000,20000,50000];const active=pv===vals[i];btn.style.border=active?'2px solid '+c:'2px solid #2a2826';btn.style.background=active?c+'22':'#0f0e0d';btn.style.color=active?c:'#555';});}
+function toggleCustom(){customDensity=!customDensity;const c=getColor();const btn=document.getElementById('custom-btn');btn.textContent=customDensity?"● QO'LDA":"○ QO'LDA";btn.style.color=customDensity?c:'#555';document.getElementById('density-display').style.display=customDensity?'none':'block';document.getElementById('density-input').style.display=customDensity?'block':'none';if(customDensity){document.getElementById('density-input').style.color=c;document.getElementById('density-input').style.border='1px solid '+c+'44';}calculate();}
+function calculate(){const c=getColor();const r=diameter/2/10;const density=Number(document.getElementById('density-input').value);document.getElementById('density-display').textContent=density.toFixed(2)+' g/cm³';let grams;if(mode==='gram'){grams=Number(document.getElementById('gram-input').value);}else{const pkg=Number(document.getElementById('pkg-input').value);const price=Number(document.getElementById('price-input').value);grams=pkg>0?(price/pkg)*1000:0;}const denom=Math.PI*r*r*density;const length=denom>0?grams/denom:0;document.getElementById('result-num').textContent=length.toFixed(1);document.getElementById('r-gram').textContent=grams.toFixed(0)+'g';document.getElementById('r-diam').textContent=diameter+'mm';if(mode==='price'){const price=Number(document.getElementById('price-input').value);const pkg=Number(document.getElementById('pkg-input').value);document.getElementById('r3-lbl').textContent='NARX';document.getElementById('r3-val').textContent=price.toLocaleString()+" so'm";const pi=document.getElementById('price-info');pi.style.display='block';pi.innerHTML='1 kg = '+pkg.toLocaleString()+" so'm → <span style='color:"+c+";font-weight:700'>"+grams.toFixed(0)+" gram</span>";}else{document.getElementById('r3-lbl').textContent='ZICHLIK';document.getElementById('r3-val').textContent=density.toFixed(2);document.getElementById('price-info').style.display='none';}updateChips();updateModeBtns();}
+renderTypeChips();setMode('gram');applyColor();calculate();
+</script>
+</body>
+</html>
